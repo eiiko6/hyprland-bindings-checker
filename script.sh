@@ -57,6 +57,16 @@ print_keyboard() {
     done
 }
 
+# Function to extract commands
+extract_commands() {
+  local mod="$1"
+  cat "$config_file" |
+    grep "^bind = \$mainMod$mod, " |
+    awk -v key="$key" -F ', ' '$2 == key {print $0"\n"}' |
+    sed 's/ #.*$//' |
+    awk -F ', ' '{for(i=3;i<=NF;i++) printf "%s ", $i}'
+}
+
 # Validate the number of arguments
 if [[ $# -lt 2 ]]; then
     usage
@@ -89,11 +99,13 @@ elif [[ "$command" == "check" ]]; then
 
     key=$(echo "$3" | awk '{for(i=1;i<=NF;i++) if(length($i)==1) $i=toupper($i)} 1')  # Format keys
 
-    echo $key
+    super_commands=$(extract_commands '')
+    super_shift_commands=$(extract_commands ' SHIFT')
+    super_control_commands=$(extract_commands ' CONTROL')
 
-    cat "$config_file" | grep '^bind = \$mainMod, ' | awk -v key="$key" -F ', ' '$2 == key'
-    cat "$config_file" | grep '^bind = \$mainMod SHIFT, ' | awk -v key="$key" -F ', ' '$2 == key'
-    cat "$config_file" | grep '^bind = \$mainMod CONTROL, ' | awk -v key="$key" -F ', ' '$2 == key'
+    [[ -n "$super_commands" ]] && echo "super commands:" && echo "$super_commands" | awk '{print "   "$0} END {print "\n"}'
+    [[ -n "$super_shift_commands" ]] && echo "super + shift commands:" && echo "$super_shift_commands" | awk '{print "   "$0} END {print "\n"}'
+    [[ -n "$super_control_commands" ]] && echo "super + control commands:" && echo "$super_control_commands" | awk '{print "   "$0} END {print "\n"}'
 else
     usage
 fi
