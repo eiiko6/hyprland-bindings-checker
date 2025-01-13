@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# Define the input config file
-config_file="$HOME/.config/hypr/bindings.conf"
-
-# Collect all assigned super keys (including super, super+shift, super+control)
-super_keys=$(cat "$config_file" | grep '^bind = \$mainMod, ' | awk '{print $4}' | tr -d ',')
-super_shift_keys=$(cat "$config_file" | grep '^bind = \$mainMod SHIFT, ' | awk '{print $5}' | tr -d ',')
-super_control_keys=$(cat "$config_file" | grep '^bind = \$mainMod CONTROL, ' | awk '{print $5}' | tr -d ',')
-
 # Layout of the keyboard
 layout=(
     "ESC F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12"
@@ -75,6 +67,11 @@ fi
 # Parse the command
 command=$1
 config_file=$2
+
+# Collect all assigned super keys (including super, super+shift, super+control)
+super_keys=$(cat "$config_file" | grep '^bind = \$mainMod, ' | awk '{print $4}' | tr -d ',')
+super_shift_keys=$(cat "$config_file" | grep '^bind = \$mainMod SHIFT, ' | awk '{print $5}' | tr -d ',')
+super_control_keys=$(cat "$config_file" | grep '^bind = \$mainMod CONTROL, ' | awk '{print $5}' | tr -d ',')
 
 if [[ ! -f "$config_file" ]]; then
     echo "Error: Config file '$config_file' not found!"
