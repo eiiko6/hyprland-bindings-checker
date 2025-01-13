@@ -19,6 +19,14 @@ layout=(
     "\t left up down left"
 )
 
+# Function to display usage
+usage() {
+    echo "Usage:"
+    echo "  $0 layout <path-to-config-file>"
+    echo "  $0 check <path-to-config-file> <key>"
+    exit 1
+}
+
 # Function to check if a key is assigned
 is_assigned() {
     local key=$1
@@ -49,14 +57,43 @@ print_keyboard() {
     done
 }
 
-# Print 3 separate keyboards
+# Validate the number of arguments
+if [[ $# -lt 2 ]]; then
+    usage
+fi
 
-echo -e "\n\t<---  Super Keys  --->"
-print_keyboard "$super_keys"
+# Parse the command
+command=$1
+config_file=$2
 
-echo -e "\n\t<---  Super + Shift Keys  --->"
-print_keyboard "$super_shift_keys"
+if [[ ! -f "$config_file" ]]; then
+    echo "Error: Config file '$config_file' not found!"
+    exit 1
+fi
 
-echo -e "\n\t<---  Super + Control Keys  --->"
-print_keyboard "$super_control_keys"
+# Handle commands
+if [[ "$command" == "layout" ]]; then
+    echo -e "\n\t<---  Super Keys  --->"
+    print_keyboard "$super_keys"
 
+    echo -e "\n\t<---  Super + Shift Keys  --->"
+    print_keyboard "$super_shift_keys"
+
+    echo -e "\n\t<---  Super + Control Keys  --->"
+    print_keyboard "$super_control_keys"
+
+elif [[ "$command" == "check" ]]; then
+    if [[ $# -ne 3 ]]; then
+        usage
+    fi
+
+    key=$(echo "$3" | awk '{for(i=1;i<=NF;i++) if(length($i)==1) $i=toupper($i)} 1')  # Format keys
+
+    echo $key
+
+    cat "$config_file" | grep '^bind = \$mainMod, ' | awk -v key="$key" -F ', ' '$2 == key'
+    cat "$config_file" | grep '^bind = \$mainMod SHIFT, ' | awk -v key="$key" -F ', ' '$2 == key'
+    cat "$config_file" | grep '^bind = \$mainMod CONTROL, ' | awk -v key="$key" -F ', ' '$2 == key'
+else
+    usage
+fi
